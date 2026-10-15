@@ -8,7 +8,7 @@ tasks.release-plz = "./scripts/release-plz.sh"
 
 [tools]
 node = '24'
-aube = '1.4'
+aube = { version = 'latest', minimum_release_age = '0s' }
 git-cliff = 'latest'
 gh = 'latest'
-communique = 'latest'
+communique = { version = 'latest', minimum_release_age = '0s' }

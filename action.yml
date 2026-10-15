@@ -7,7 +7,13 @@ branding:
 inputs:
   version:
     required: false
-    description: The version of mise to use. If not specified, will use the latest release.
+    description: The version of mise to use. If not specified, uses the newest release satisfying minimum_release_age.
+  minimum_release_age:
+    required: false
+    default: "24h"
+    description: |
+      When version is not specified, only install stable mise releases older than this threshold. Defaults to 24h; set 0s to disable the delay.
+      Accepts relative durations such as 24h, 7d, 6mo, or 1y, and absolute ISO dates or timestamps.
   sha256:
     required: false
     description: The SHA256 checksum of the mise binary to verify the download.
@@ -26,10 +32,20 @@ inputs:
   install:
     required: false
     default: "true"
-    description: if false, will not run `mise install`
+    description: if false, will not run `mise install` or `mise bootstrap`
   install_args:
     required: false
-    description: Arguments to pass to `mise install` such as "bun" to only install bun
+    description: Arguments to pass to `mise install` such as "bun" to only install bun. When a repo mise lock file is present, the action automatically adds `--locked` unless you already provided it.
+  bootstrap:
+    required: false
+    default: "false"
+    description: if true, will run `mise bootstrap` instead of `mise install`
+  bootstrap_skip:
+    required: false
+    description: Comma-separated bootstrap parts to skip, such as "tools,task". Passed as `mise bootstrap --skip`.
+  bootstrap_args:
+    required: false
+    description: Additional arguments to pass to `mise bootstrap`.
   install_dir:
     required: false
     description: deprecated
@@ -49,8 +65,8 @@ inputs:
     required: false
     description: |
       Override the complete cache key (ignores all other cache key options).
-      Supports template variables: {{version}}, {{cache_key_prefix}}, {{platform}}, {{file_hash}}, 
-      {{mise_env}}, {{install_args_hash}}, {{default}}, {{env.VAR_NAME}} for environment variables, 
+      Supports template variables: {{version}}, {{cache_key_prefix}}, {{platform}}, {{file_hash}},
+      {{mise_env}}, {{install_args_hash}}, {{bootstrap_hash}}, {{default}}, {{env.VAR_NAME}} for environment variables,
       and conditional logic like {{#if version}}...{{/if}}
   experimental:
     required: false
@@ -82,7 +98,11 @@ inputs:
     default: "true"
     description: If true (default), fetch the mise binary from GitHub. If false and using the latest version, fetch from mise.jdx.dev instead.
   env:
-    description: "Automatically load mise env vars into GITHUB_ENV. Note that PATH modifications are not part of this."
+    description: Automatically load mise environment variables for subsequent steps.
+    required: false
+    default: "true"
+  export_path:
+    description: Add PATH entries produced by mise, including [env] _.path, to subsequent steps through GITHUB_PATH.
     required: false
     default: "true"
   wings_enabled:

@@ -7,6 +7,9 @@ on:
       - main
       - 'releases/*'
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
@@ -19,15 +22,19 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # `mise.toml` pins both Node and aube; mise-action installs
-      # whatever's listed there. Reads `package-lock.json`
-      # directly — no separate `aube-lock.yaml` to maintain.
+      # whatever's listed there. `aube ci` installs exactly the
+      # dependency graph recorded in `aube-lock.yaml`.
       # `.npmrc` pins `node-linker=hoisted` so the layout is
       # npm-flat (rollup's `--configPlugin` resolution
       # requires this).
-      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          cache: false
 
       - name: Install Dependencies
         id: aube-ci
